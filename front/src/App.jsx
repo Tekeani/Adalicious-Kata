@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import './App.css';
-const cors = require('cors');
-app.use(cors());
 
 function UserView({ addOrder }) {
   const [menu, setMenu] = useState([]);
 
   useEffect(() => {
-    // Récupérer le menu depuis l'API
     fetch('http://localhost:3002/menu')
       .then((response) => response.json())
-      .then((data) => setMenu(data))
+      .then((data) => {
+        console.log("Données reçues:", data);
+        setMenu(data);
+      })
       .catch((error) => console.error("Erreur lors de la récupération du menu:", error));
   }, []);
 
@@ -27,6 +27,7 @@ function UserView({ addOrder }) {
       })
         .then((response) => response.json())
         .then((order) => {
+          console.log(order);
           addOrder(order);
         })
         .catch((error) => console.error("Erreur lors de la création de la commande:", error));
@@ -59,7 +60,7 @@ function KitchenView({ orders, updateOrderStatus }) {
     content = orders.map((order) => (
       <div key={order.id}>
         <h2>Commande de {order.username}</h2>
-        <p>{order.plate.plate} - {order.plate.description}</p>
+        <p>{order.plate ? order.plate.plate : "Plat inconnu"} - {order.plate ? order.plate.description : "Description non disponible"}</p>
         <button onClick={() => updateOrderStatus(order.id, "prête")}>Prête !</button>
         <button onClick={() => updateOrderStatus(order.id, "annulée")}>Annuler</button>
       </div>
@@ -81,7 +82,10 @@ function App() {
     // Récupérer les commandes depuis l'API
     fetch('http://localhost:3002/order')
       .then((response) => response.json())
-      .then((data) => setOrders(data))
+      .then((data) => {
+        console.log(data);
+        setOrders(data);
+      })
       .catch((error) => console.error("Erreur lors de la récupération des commandes:", error));
   }, []);
 
@@ -99,11 +103,13 @@ function App() {
     })
       .then((response) => response.json())
       .then((updatedOrder) => {
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.id === updatedOrder.id ? updatedOrder : order
-          )
-        );
+        if (updatedOrder.status === "prête") {
+          // Retirer la commande de la liste une fois qu'elle est prête
+          setOrders((prevOrders) => prevOrders.filter((order) => order.id !== updatedOrder.id));
+        } else {
+          // Si la commande est annulée, on peut la retirer également
+          setOrders((prevOrders) => prevOrders.filter((order) => order.id !== updatedOrder.id));
+        }
       })
       .catch((error) => console.error("Erreur lors de la mise à jour du statut de la commande:", error));
   };
