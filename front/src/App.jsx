@@ -23,7 +23,7 @@ function UserView({ addOrder }) {
       });
   }, []);
 
-  const handleOrder = (plate_id) => {
+  const handleOrder = (plateId) => {
     const username = prompt("Entrez votre nom pour la commande:");
     if (username) {
       fetch('http://localhost:3002/order', {
@@ -31,7 +31,7 @@ function UserView({ addOrder }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ plate_id, username })
+        body: JSON.stringify({ plateId, username })
       })
         .then((response) => response.json())
         .then((order) => {
